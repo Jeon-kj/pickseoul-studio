@@ -36,6 +36,8 @@
 .topbar h1,
 .section-head h2,
 .detail-card h1,
+.detail-section h2,
+.related-card h3,
 .empty-state h3 {
   margin: 0;
   line-height: 1.05;
@@ -50,6 +52,9 @@
 .section-head p,
 .card-summary,
 .detail-description,
+.detail-hero-line,
+.detail-points p,
+.related-card p,
 .empty-state p {
   margin: 0;
   color: #5b5b5b;
@@ -62,7 +67,9 @@
 }
 
 .browse-shell,
-.section-head {
+.section-head,
+.detail-heading,
+.detail-section {
   display: grid;
   gap: 18px;
 }
@@ -111,10 +118,18 @@
   font-size: 1.15rem;
 }
 
-.event-grid {
+.event-grid,
+.related-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
+}
+
+.event-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.related-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .event-card {
@@ -130,10 +145,14 @@
   outline-offset: 2px;
 }
 
-.browse-card {
+.browse-card,
+.related-card {
   display: grid;
   gap: 18px;
   padding: 22px;
+}
+
+.browse-card {
   min-height: 260px;
 }
 
@@ -161,6 +180,7 @@
 }
 
 .category-badge {
+  width: fit-content;
   background: #f1dfcf;
   color: #8b4d24;
 }
@@ -217,9 +237,10 @@
   cursor: pointer;
 }
 
-.detail-card {
+.detail-card,
+.related-section {
   display: grid;
-  gap: 20px;
+  gap: 22px;
   padding: 28px;
   border: 1px solid #e6ded3;
   border-radius: 28px;
@@ -228,7 +249,12 @@
 }
 
 .detail-card h1 {
-  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-size: clamp(2rem, 5vw, 3.1rem);
+}
+
+.detail-hero-line {
+  font-size: 1.05rem;
+  color: #3e3a35;
 }
 
 .detail-meta {
@@ -256,6 +282,40 @@
   color: #171717;
 }
 
+.detail-section {
+  gap: 12px;
+}
+
+.detail-section h2 {
+  font-size: 1.1rem;
+}
+
+.detail-description,
+.detail-points p {
+  line-height: 1.7;
+}
+
+.detail-points {
+  display: grid;
+  gap: 10px;
+}
+
+.compact-head {
+  gap: 4px;
+}
+
+.compact-head h2 {
+  font-size: 1.45rem;
+}
+
+.related-card {
+  gap: 14px;
+}
+
+.related-card h3 {
+  font-size: 1.15rem;
+}
+
 @media (max-width: 960px) {
   .filter-bar {
     grid-template-columns: 1fr 1fr;
@@ -266,7 +326,8 @@
     justify-content: flex-start;
   }
 
-  .event-grid {
+  .event-grid,
+  .related-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -287,13 +348,16 @@
 
   .filter-bar,
   .browse-card,
-  .detail-card {
+  .detail-card,
+  .related-card,
+  .related-section {
     padding: 18px;
     border-radius: 20px;
   }
 
   .filter-bar,
-  .event-grid {
+  .event-grid,
+  .related-grid {
     grid-template-columns: 1fr;
   }
 

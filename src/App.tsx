@@ -195,7 +195,7 @@ function App() {
         <p className="brand-eyebrow">Today, Pick Seoul</p>
         <h1>오늘 뭐하지?</h1>
         <p className="brand-copy">
-          오늘 갈 만한 행사를 지역과 분위기별로 가볍게 탐색해보세요.
+          오늘 바로 움직일 수 있는 행사만 먼저 보여드릴게요.
         </p>
       </header>
 
@@ -204,7 +204,7 @@ function App() {
           <div className="section-head">
             <p className="section-label">Main Picks</p>
             <h2>오늘의 행사 3가지</h2>
-            <p>홈에서는 지금 바로 보기 좋은 행사만 먼저 추려 보여줍니다.</p>
+            <p>지금 고르기 쉬운 행사만 가볍게 추려놨습니다. 고민은 줄이고 선택은 빠르게.</p>
           </div>
 
           <div className="featured-grid">
@@ -245,7 +245,7 @@ function App() {
           <div className="section-head">
             <p className="section-label">Event List</p>
             <h2>오늘 둘러볼 행사</h2>
-            <p>복잡한 검색 대신, 지금 갈 수 있는 행사만 직관적으로 모았습니다.</p>
+            <p>조금 더 보고 싶다면 아래에서 지역과 카테고리로 편하게 둘러보세요.</p>
           </div>
 
           <div className="filter-bar">

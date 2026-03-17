@@ -124,6 +124,12 @@
   gap: 18px;
 }
 
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .event-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -152,8 +158,30 @@
   padding: 22px;
 }
 
+.featured-card {
+  overflow: hidden;
+}
+
 .browse-card {
   min-height: 260px;
+}
+
+.featured-image {
+  min-height: 180px;
+  background-position: center;
+  background-size: cover;
+}
+
+.featured-body {
+  display: grid;
+  gap: 14px;
+  padding: 20px 22px 22px;
+}
+
+.featured-body h3 {
+  margin: 0;
+  color: #161616;
+  font-size: 1.45rem;
 }
 
 .card-topline,
@@ -327,6 +355,7 @@
   }
 
   .event-grid,
+  .featured-grid,
   .related-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -357,6 +386,7 @@
 
   .filter-bar,
   .event-grid,
+  .featured-grid,
   .related-grid {
     grid-template-columns: 1fr;
   }

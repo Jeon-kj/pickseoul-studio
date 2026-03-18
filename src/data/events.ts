@@ -317,7 +317,13 @@ async function fetchSeoulEvents(today: string) {
   const response = await fetch(endpoint)
 
   if (!response.ok) {
-    throw new Error(`서울 열린데이터 API 요청에 실패했습니다. (${response.status})`)
+    const responseText = await response.text()
+    const detail = responseText.trim().slice(0, 180)
+    const suffix = detail ? ` ${detail}` : ''
+
+    throw new Error(
+      `서울 열린데이터 프록시 요청에 실패했습니다. 상태코드 ${response.status}.${suffix}`,
+    )
   }
 
   const data = (await response.json()) as SeoulEventApiResponse
@@ -441,7 +447,7 @@ export async function fetchEvents() {
 
     throw new Error(
       messages[0] ||
-        '행사 데이터를 불러오지 못했습니다. `VITE_SEOUL_API_KEY`, `VITE_TOUR_API_KEY`를 확인하세요.',
+        '행사 데이터를 불러오지 못했습니다. 로컬에서는 `.env`의 API 키를, 배포에서는 Cloudflare 환경 변수를 확인하세요.',
     )
   }
 

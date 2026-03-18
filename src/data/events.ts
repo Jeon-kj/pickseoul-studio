@@ -81,15 +81,8 @@ type TourEventRow = {
 
 const SEOUL_OPEN_API_KEY = import.meta.env.VITE_SEOUL_API_KEY?.trim()
 const TOUR_API_KEY = import.meta.env.VITE_TOUR_API_KEY?.trim()
-const SEOUL_PROXY_PATH =
-  import.meta.env.DEV
-    ? '/proxy/seoul'
-    : import.meta.env.VITE_SEOUL_API_BASE_URL?.trim() || 'http://openapi.seoul.go.kr:8088'
-const TOUR_PROXY_PATH =
-  import.meta.env.DEV
-    ? '/proxy/tour'
-    : import.meta.env.VITE_TOUR_API_BASE_URL?.trim() ||
-      'https://apis.data.go.kr/B551011/KorService2'
+const SEOUL_PROXY_PATH = '/proxy/seoul'
+const TOUR_PROXY_PATH = '/proxy/tour'
 const SEOUL_TIME_ZONE = 'Asia/Seoul'
 const FALLBACK_IMAGE =
   'data:image/svg+xml;charset=UTF-8,' +
@@ -313,13 +306,15 @@ function buildTourRecord(row: TourEventRow): UnifiedEventRecord {
 }
 
 async function fetchSeoulEvents(today: string) {
-  if (!SEOUL_OPEN_API_KEY) {
+  if (import.meta.env.DEV && !SEOUL_OPEN_API_KEY) {
     throw new Error('`VITE_SEOUL_API_KEY`가 없습니다.')
   }
 
-  const response = await fetch(
-    `${SEOUL_PROXY_PATH}/${SEOUL_OPEN_API_KEY}/json/ListPublicReservationCulture/1/400`,
-  )
+  const endpoint = import.meta.env.DEV
+    ? `${SEOUL_PROXY_PATH}/${SEOUL_OPEN_API_KEY}/json/ListPublicReservationCulture/1/400`
+    : `${SEOUL_PROXY_PATH}/json/ListPublicReservationCulture/1/400`
+
+  const response = await fetch(endpoint)
 
   if (!response.ok) {
     throw new Error(`서울 열린데이터 API 요청에 실패했습니다. (${response.status})`)
@@ -348,12 +343,11 @@ async function fetchSeoulEvents(today: string) {
 }
 
 async function fetchTourEvents(today: string) {
-  if (!TOUR_API_KEY) {
+  if (import.meta.env.DEV && !TOUR_API_KEY) {
     throw new Error('`VITE_TOUR_API_KEY`가 없습니다.')
   }
 
   const url = new URL(`${TOUR_PROXY_PATH}/searchFestival2`, window.location.origin)
-  url.searchParams.set('serviceKey', TOUR_API_KEY)
   url.searchParams.set('numOfRows', '200')
   url.searchParams.set('pageNo', '1')
   url.searchParams.set('MobileOS', 'ETC')
@@ -362,6 +356,10 @@ async function fetchTourEvents(today: string) {
   url.searchParams.set('arrange', 'A')
   url.searchParams.set('eventStartDate', today)
   url.searchParams.set('areaCode', '1')
+
+  if (import.meta.env.DEV) {
+    url.searchParams.set('serviceKey', TOUR_API_KEY)
+  }
 
   const response = await fetch(url.toString())
 

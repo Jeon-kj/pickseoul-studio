@@ -1,16 +1,14 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import {
-  categoryOptions,
-  events,
+  fetchEvents,
+  getCategoryOptions,
   getEventById,
   getFeaturedEvents,
+  getRegionOptions,
   getRelatedEvents,
-  regionOptions,
   type EventItem,
 } from './data/events'
-
-const featuredEvents = getFeaturedEvents()
 
 function getRoute() {
   const hash = window.location.hash.replace(/^#/, '')
@@ -20,6 +18,14 @@ function getRoute() {
 function getEventIdFromRoute(route: string) {
   const match = route.match(/^\/events\/([^/]+)$/)
   return match?.[1] ?? null
+}
+
+function LoadingState({ message }: { message: string }) {
+  return (
+    <div className="empty-state status-state">
+      <h3>{message}</h3>
+    </div>
+  )
 }
 
 function EventDetail({
@@ -89,9 +95,11 @@ function EventDetail({
           <section className="detail-section">
             <h2>이렇게 즐기기 좋아요</h2>
             <div className="detail-points">
-              {event.details.map((item) => (
-                <p key={item}>{item}</p>
-              ))}
+              {event.details.length > 0 ? (
+                event.details.map((item) => <p key={item}>{item}</p>)
+              ) : (
+                <p>상세 운영 정보는 예약 페이지에서 확인해 주세요.</p>
+              )}
             </div>
           </section>
 
@@ -147,9 +155,15 @@ function App() {
   const [route, setRoute] = useState(getRoute())
   const [selectedRegion, setSelectedRegion] = useState('전체 지역')
   const [selectedCategory, setSelectedCategory] = useState('전체 카테고리')
+  const [events, setEvents] = useState<EventItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const eventId = getEventIdFromRoute(route)
-  const selectedEvent = eventId ? getEventById(eventId) : null
+  const selectedEvent = eventId ? getEventById(events, eventId) : null
+  const featuredEvents = getFeaturedEvents(events)
+  const regionOptions = getRegionOptions(events)
+  const categoryOptions = getCategoryOptions(events)
 
   useEffect(() => {
     const syncRoute = () => setRoute(getRoute())
@@ -159,6 +173,40 @@ function App() {
     return () => {
       window.removeEventListener('hashchange', syncRoute)
       window.removeEventListener('popstate', syncRoute)
+    }
+  }, [])
+
+  useEffect(() => {
+    let ignore = false
+
+    async function loadEvents() {
+      try {
+        setLoading(true)
+        setError(null)
+        const nextEvents = await fetchEvents()
+
+        if (!ignore) {
+          setEvents(nextEvents)
+        }
+      } catch (caughtError) {
+        if (!ignore) {
+          setError(
+            caughtError instanceof Error
+              ? caughtError.message
+              : '행사 데이터를 불러오지 못했습니다.',
+          )
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadEvents()
+
+    return () => {
+      ignore = true
     }
   }, [])
 
@@ -176,9 +224,36 @@ function App() {
     return matchesRegion && matchesCategory
   })
 
-  const relatedEvents = selectedEvent ? getRelatedEvents(selectedEvent) : []
+  const relatedEvents = selectedEvent ? getRelatedEvents(events, selectedEvent) : []
 
   if (eventId) {
+    if (loading) {
+      return (
+        <main className="detail-page">
+          <div className="detail-shell">
+            <LoadingState message="행사 정보를 불러오는 중입니다." />
+          </div>
+        </main>
+      )
+    }
+
+    if (error) {
+      return (
+        <main className="detail-page">
+          <div className="detail-shell">
+            <button className="back-link" type="button" onClick={() => moveTo('/')}>
+              행사 리스트로 돌아가기
+            </button>
+            <div className="detail-card">
+              <p className="section-label">Event Detail</p>
+              <h1>행사 데이터를 불러오지 못했습니다</h1>
+              <p className="detail-description">{error}</p>
+            </div>
+          </div>
+        </main>
+      )
+    }
+
     return (
       <EventDetail
         event={selectedEvent ?? undefined}
@@ -207,38 +282,47 @@ function App() {
             <p>지금 고르기 쉬운 행사만 가볍게 추려놨습니다. 고민은 줄이고 선택은 빠르게.</p>
           </div>
 
-          <div className="featured-grid">
-            {featuredEvents.map((event) => (
-              <article
-                key={event.id}
-                className="event-card featured-card"
-                role="button"
-                tabIndex={0}
-                onClick={() => moveTo(`/events/${event.id}`)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    moveTo(`/events/${event.id}`)
-                  }
-                }}
-              >
-                <div
-                  className="featured-image"
-                  style={{ backgroundImage: `url(${event.thumbnail})` }}
-                  aria-hidden="true"
-                />
-                <div className="featured-body">
-                  <div className="card-topline">
-                    <span className="category-badge">{event.category}</span>
-                    <span className="area-text">{event.region}</span>
+          {loading ? (
+            <LoadingState message="오늘의 행사 데이터를 불러오는 중입니다." />
+          ) : error ? (
+            <div className="empty-state status-state">
+              <h3>행사 데이터를 불러오지 못했습니다</h3>
+              <p>{error}</p>
+            </div>
+          ) : (
+            <div className="featured-grid">
+              {featuredEvents.map((event) => (
+                <article
+                  key={event.id}
+                  className="event-card featured-card"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => moveTo(`/events/${event.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      moveTo(`/events/${event.id}`)
+                    }
+                  }}
+                >
+                  <div
+                    className="featured-image"
+                    style={{ backgroundImage: `url(${event.thumbnail})` }}
+                    aria-hidden="true"
+                  />
+                  <div className="featured-body">
+                    <div className="card-topline">
+                      <span className="category-badge">{event.category}</span>
+                      <span className="area-text">{event.region}</span>
+                    </div>
+                    <h3>{event.title}</h3>
+                    <p className="card-summary">{event.summary}</p>
+                    <div className="schedule-line">{event.dateTime}</div>
                   </div>
-                  <h3>{event.title}</h3>
-                  <p className="card-summary">{event.summary}</p>
-                  <div className="schedule-line">{event.dateTime}</div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="browse-shell">
@@ -254,6 +338,7 @@ function App() {
               <select
                 value={selectedRegion}
                 onChange={(event) => setSelectedRegion(event.target.value)}
+                disabled={loading || Boolean(error)}
               >
                 {regionOptions.map((option) => (
                   <option key={option} value={option}>
@@ -268,6 +353,7 @@ function App() {
               <select
                 value={selectedCategory}
                 onChange={(event) => setSelectedCategory(event.target.value)}
+                disabled={loading || Boolean(error)}
               >
                 {categoryOptions.map((option) => (
                   <option key={option} value={option}>
@@ -283,7 +369,14 @@ function App() {
             </div>
           </div>
 
-          {filteredEvents.length > 0 ? (
+          {loading ? (
+            <LoadingState message="행사 리스트를 불러오는 중입니다." />
+          ) : error ? (
+            <div className="empty-state status-state">
+              <h3>행사 리스트를 불러오지 못했습니다</h3>
+              <p>{error}</p>
+            </div>
+          ) : filteredEvents.length > 0 ? (
             <div className="event-grid">
               {filteredEvents.map((event) => (
                 <article

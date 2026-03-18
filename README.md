@@ -71,3 +71,11 @@ export default defineConfig([
   },
 ])
 ```
+
+## Seoul Event API
+
+1. Copy `.env.example` to `.env`.
+2. Set `VITE_SEOUL_API_KEY` and `VITE_TOUR_API_KEY`.
+3. Run `npm run dev`.
+
+The home screen reads live data from the Seoul Open API `ListPublicReservationCulture` endpoint and the Korea Tourism Organization TourAPI `searchFestival2` endpoint, then merges them into the existing card/detail UI with duplicate filtering.
